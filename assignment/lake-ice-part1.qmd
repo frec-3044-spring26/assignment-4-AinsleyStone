@@ -19,7 +19,9 @@ For some reason, `read_excel()` does not like relative paths, so we will use the
 
 ```{r}
 library(here)
+library(tidyverse)
 file_name <- file.path(here(),"data/lake_ice_off_data.xlsx")
+
 ```
 
 Now use `read_excel()` to read in `file_name`. Remember that Excel files can have multiple sheets.
@@ -27,12 +29,13 @@ Now use `read_excel()` to read in `file_name`. Remember that Excel files can hav
 ```{r}
 library(readxl)
 
+lake_ice <- read_excel(`file_name`, sheet = 2)
 ```
 
 Now, look at a preview of the data using the `head()` function. The `doy` in `ice_off_doy` stands for "day of the year" and is the day within the year where ice off occurred (January 1 = doy 1).  `did_not_freeze` is a column where 1 = did not freeze and 0 = did freeze.
 
 ```{r}
-
+head(lake_ice)
 ```
 
 There should be four columns and \~2703 rows.
@@ -42,7 +45,8 @@ There should be four columns and \~2703 rows.
 We will practice key skills in the module using a focal lake. Use the `filter` function to filter the more extensive data to only contain the data from Lake Sunapee, a lake in New Hampshire. Filter the data `ice_data` by the variable `lake_name` to create a data frame called `sunapee`.
 
 ```{r}
-
+sunapee <- lake_ice |> 
+  filter(lake_name == "Sunapee")
 ```
 
 You will be using the `sunapee` data for the rest of the module until Question 11
@@ -58,7 +62,14 @@ Be sure that the title, x-axis, and y-axis labels are clearly labeled.
 **Answer 1:**
 
 ```{r}
-
+sunapee |>
+  ggplot(aes(year, ice_off_doy))+
+  geom_point()+
+  geom_line()+
+  theme_bw()+
+  labs(title = "Ice of Day of Each Year",
+       x = "Year", 
+       y = "Day Where ice off occured")
 ```
 
 # How does ice cover change over time at Lake Sunapee?
@@ -71,18 +82,22 @@ What do you expect the sign (plus, minus, or no change) to be for the slope of t
 
 **Answer 2:**
 
+I expect the sign of the slope to be negative. This is because if you look at the overall trend of the points, they seem to be moving downward from left to right.
+
 Use the `lm` function to predict `ice_off_doy` as a function (`~`) of the year for the data.frame called `sunapee`. You can learn more about the `lm` function [here](https://www.datacamp.com/tutorial/linear-regression-R)
 
 Create an object called `fit` that contains the results of the linear model.
 
 ```{r}
+fit <- lm(ice_off_doy ~ year, data = sunapee)
 
+fit
 ```
 
 Then, use the function `summary` to explore the result of the `lm` function.
 
 ```{r}
-
+summary(fit)
 ```
 
 The results of your linear model are in an object named `fit`, so you can find the regression coefficients at `fit$coefficients[1]` (the intercept) and `fit$coefficients[2]` (the slope). Confirm that `fit$coefficients[1]` and `fit$coefficients[2]` match the values expected from the summary command you ran above.
@@ -98,6 +113,8 @@ What is the direction of the slope? How does this match your expectations from Q
 
 **Answer 3:**
 
+The direction of the slope is in fact negative. This matches my expectations from question 2 as the overall trend of the points looked to be going down.
+
 # Is our model any good?
 
 ## R2
@@ -109,6 +126,8 @@ First, it is important to understand how much variation is explained by the mode
 What is the R2 for the regression? Based on the R2, is `year` and `ice_off_doy` strongly related?
 
 **Answer 4:**
+
+The R2 for the regression is 0.2055. This is less than 0.3, indicating that the year and ice_off_doy are not strongly related.
 
 ## Residuals normally distributed
 
@@ -128,6 +147,10 @@ We will use a histogram to visually assess whether this requirement is met. Firs
 You will use a histogram to examine the residuals. First, the code uses the coefficients to predict the yearly ice-off DOY. Second, calculate the residuals by subtracting the predicted ice-off DOY from the observed DOY.
 
 ```{r}
+str(sunapee)
+sunapee <- sunapee |>
+  mutate(ice_off_doy = as.numeric(ice_off_doy))
+
 sunapee <- sunapee %>% 
   mutate(predicted = fit$coefficients[1] + year * fit$coefficients[2], 
          residual = ice_off_doy - predicted) #Observed - Predicted
@@ -140,7 +163,11 @@ Use the [`add_predictions()`](https://modelr.tidyverse.org/reference/add_predict
 **Answer 5:**
 
 ```{r}
+library(modelr)
 
+sunapee <- sunapee |>
+  add_predictions(fit) |>
+  add_residuals(fit)
 ```
 
 Now, to visualize the residuals, use `geom_histogram()` to plot them as a histogram. I recommend using a bin width of 10 in the histogram.
@@ -151,8 +178,15 @@ Show Histogram and answer the following question: do the residuals meet the assu
 
 **Answer 6:**
 
-```{r}
+The residuals are distributed around 0, but are not normally distributed because there is a left skew.
 
+```{r}
+ggplot(sunapee, aes(x = resid)) +
+  geom_histogram(bins = 10, color = "black", fill = "purple") +
+  labs(title = "Histogram of Residuals",
+       x = "Residual (Observed - Predicted)",
+       y = "Frequency") +
+  theme_bw()
 ```
 
 
