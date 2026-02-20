@@ -282,7 +282,43 @@ Use the skills developed above to evaluate the question "Is the ice-off day of y
 
 **Answer 12:**
 
+According to the linear model, the slope of the plot from before 1970 is -0.1097, and the slope of the plot from after 1970 is -0.3024. In the plot you can visually see that the green line (before 1970), has a less steep slope than the purple line (after 1970). This shows an increase in the rate of ice-off day of year, meaning that overtime the rate at which the ice off day of year is decreasing, is increasing.
+
 Use a mix of code, figures, and text to present your analysis.  If you want to compare slopes, be sure they are on the same plot.
+
+```{r}
+sunapee_before70 <- sunapee |>
+  filter(year < 1970)
+
+sunapee_after70 <- sunapee |>
+  filter(year >= 1970)
+
+before <- lm(ice_off_doy ~ year, data = sunapee_before70)
+after <- lm(ice_off_doy ~ year, data = sunapee_after70)
+
+before
+after
+
+plot2 <- sunapee |>
+  ggplot(aes(year, ice_off_doy))+
+  geom_point()+
+  theme_bw()+
+  labs(title = "Ice of Day Each Year",
+       x = "Year",
+       y = "Day where Ice off Occured")
+
+?geom_abline
+
+plot2 +
+  geom_abline(
+    intercept =  325.5421, 
+    slope = -0.1097,
+    color = "purple")+
+  geom_abline(
+    intercept = 711.9216, 
+    slope = -0.3024,
+    color = "green")
+```
 
 # Rendering and committing
 
