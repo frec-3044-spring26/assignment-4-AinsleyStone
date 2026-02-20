@@ -64,7 +64,7 @@ Be sure that the title, x-axis, and y-axis labels are clearly labeled.
 ```{r}
 sunapee <- sunapee |>
   mutate(ice_off_doy = as.numeric(ice_off_doy))
-sunapee |>
+plot <- sunapee |>
   ggplot(aes(year, ice_off_doy))+
   geom_point()+
   geom_line()+
@@ -72,6 +72,8 @@ sunapee |>
   labs(title = "Ice of Day of Each Year",
        x = "Year", 
        y = "Day Where ice off occured")
+
+plot
 ```
 
 # How does ice cover change over time at Lake Sunapee?
@@ -199,6 +201,8 @@ Based on the `summary()` above, what is the p-value for the slope?
 
 **Answer 7:**
 
+The p-value for the slope is 2.504e-09
+
 ## The slope physically meaningful
 
 A slope value could have a low probability of being 0 (thus we have a strong belief that it is not zero), but the magnitude of change is functionally meaningless in the physical world (i.e., the rate of change is so small that we would not think much of it). This can occur particularly when analyzing large datasets.
@@ -209,6 +213,8 @@ Based on the slope value, how many more years are needed to pass before the lake
 
 **Answer 8:**
 
+Based on the slope value (-0.1060227), about 66 years is how long it takes for a 1 week change in ice off day. I think this is meaningful because 0.106 days earlier a year seems like a very small number, but overtime it adds up. A week earlier every 66 years sounds much quicker than 0.106 days a year. This can have large impacts on lake ecosystems.
+
 ## Overall model assessment
 
 **Question 9:**
@@ -217,11 +223,15 @@ How comfortable are you proceeding with using this linear model for additional a
 
 **Answer 9:**
 
+I think I am overall comfortable using this model for additional analysis and prediction. I feel like I understand what the model is and does, and as long as I am given the functions and how to use them I will be able to figure it out. I have been using the ? before functions when I dont remember how to use them and that has been helping me. I also am able to use class() and str() when there is an error to make sure vectors are saved correctly.
+
 **Question 10:**
 Now plot the data for Lake Sunapee (just like above - year on x-axis vs. ice of doy on y axis) but add the line from your regression results (e.g., fit intercept and slope). You will use the [`geom_abline`](https://ggplot2.tidyverse.org/reference/geom_abline.html). 
 
 **Answer 10:**
 ```{r}
+plot + 
+  geom_abline(intercept = 318.9486, slope = -0.1060227)
 
 ```
 
@@ -235,9 +245,31 @@ The goal of this question is to make a forecast of the future ice-off day (with 
 - How wide is your confidence interval (number of days)?
 
 **Answer 11:**
+The ice-off day of the year in 2040 is 102.6623.
+The 90% confidence interval is (-19.43, 14.15).
+The 90% confidence interval around the prediction is (83.23, 116,81).
+The confidence interval is 33.58 days wide.
 
 ```{r}
 
+m <- -0.1060227
+x <- 2040
+b <- 318.9486
+
+y <- m * x + b
+
+y
+
+?quantile
+
+quantile(sunapee$resid, probs = c(0.05, 0.95))
+
+lower_int <- (-19.43) + 102.66
+upper_int <- (14.15) + 102.66
+
+c(lower_int, upper_int)
+
+upper_int - lower_int
 ```
 
 # Is the ice-off day of the year changing more quickly in more recent years at Lake Sunapee?
