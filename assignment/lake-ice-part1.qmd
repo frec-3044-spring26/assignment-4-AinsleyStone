@@ -62,6 +62,8 @@ Be sure that the title, x-axis, and y-axis labels are clearly labeled.
 **Answer 1:**
 
 ```{r}
+sunapee <- sunapee |>
+  mutate(ice_off_doy = as.numeric(ice_off_doy))
 sunapee |>
   ggplot(aes(year, ice_off_doy))+
   geom_point()+
@@ -147,9 +149,6 @@ We will use a histogram to visually assess whether this requirement is met. Firs
 You will use a histogram to examine the residuals. First, the code uses the coefficients to predict the yearly ice-off DOY. Second, calculate the residuals by subtracting the predicted ice-off DOY from the observed DOY.
 
 ```{r}
-str(sunapee)
-sunapee <- sunapee |>
-  mutate(ice_off_doy = as.numeric(ice_off_doy))
 
 sunapee <- sunapee %>% 
   mutate(predicted = fit$coefficients[1] + year * fit$coefficients[2], 
